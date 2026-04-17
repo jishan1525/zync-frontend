@@ -1,11 +1,25 @@
-// src/App.jsx
 import { useState } from "react";
 import AuthPage from "./pages/AuthPage";
+import ChatPage from "./pages/ChatPage";
 
 export default function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // persist login across refresh
+    const saved = sessionStorage.getItem("zync_user");
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  if (!user) return <AuthPage onAuth={setUser} />;
+  const handleAuth = (userData) => {
+    sessionStorage.setItem("zync_user", JSON.stringify(userData));
+    setUser(userData);
+  };
 
-  return <div>Welcome, {user.username}!</div>; // swap with ChatPage later
+  const handleLogout = () => {
+    sessionStorage.removeItem("zync_user");
+    setUser(null);
+  };
+
+  if (!user) return <AuthPage onAuth={handleAuth} />;
+
+  return <ChatPage currentUser={user.username} onLogout={handleLogout} />;
 }
